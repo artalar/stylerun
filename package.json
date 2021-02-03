@@ -36,6 +36,7 @@
     "trailingComma": "es5"
   },
   "name": "stylerun",
+  "description": "Stylerun is natural and performant way to style your (P?)React application",
   "author": "artalar",
   "module": "dist/stylerun.esm.js",
   "size-limit": [
