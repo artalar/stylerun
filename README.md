@@ -3,6 +3,10 @@
 ![license](https://img.shields.io/github/license/artalar/reatom)
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/artalar/stylerun)
 
+<!-- 
+[![stylerun logo](https://github.com/artalar/stylerun/blob/main/log.svg)](https://github.com/artalar/stylerun)
+ -->
+
 **Stylerun** is natural and performant way to style your (P?)React application
 
 > API is stable, docs, testt and examples in progress
