@@ -1,44 +1,42 @@
 import React from 'react'
 
-const cid = (Date.now() + Math.random()).toString(36).replace(`.`, ``)
+const cid = (Date.now() + Math.random() * 1e17).toString(36)
 let i = 0
 function createUid() {
-  return `${cid}_${++i}`
+  return `stylerun_${cid}_${++i}`
 }
 
 let scopeI = 0
 let ID: null | string = null
 
-export function stylerun(
-  tag: keyof JSX.IntrinsicElements,
-): React.FunctionComponent & { className: string }
-export function stylerun<T extends { className?: string;[K: string]: any }>(
+export function stylerun<T extends keyof JSX.IntrinsicElements>(
+  tag: T,
+): React.FunctionComponent<JSX.IntrinsicElements[T]> & { className: string }
+export function stylerun<T extends { className?: string; [K: string]: any }>(
   component: React.FunctionComponent<T>,
 ): React.FunctionComponent<T> & { className: string }
-export function stylerun<T extends { className?: string;[K: string]: any }>(
-  componentOrTag: keyof JSX.IntrinsicElements | React.FunctionComponent<T>,
-): React.FunctionComponent<T> & { className: string } {
-  if (typeof componentOrTag === `string`) {
-    const Tag = componentOrTag
-    return stylerun((props) => <Tag {...props} />)
+export function stylerun(
+  Component_: keyof JSX.IntrinsicElements | React.FunctionComponent,
+): React.FunctionComponent & { className: string } {
+  if (typeof Component_ === `string`) {
+    return stylerun((props) => <Component_ {...props} />)
   }
 
   const id = createUid()
-  const className = `stylerun_${id}`
 
-  function Component(props: T, ref: any) {
+  function Component(props: any, ref: any) {
     try {
       scopeI = 0
       ID = id
-      return (componentOrTag as React.FunctionComponent<T>)(
-        { ...props, className: `${className} ${props.className || ``}` },
+      return (Component_ as React.FunctionComponent)(
+        { ...props, className: `${id} ${props.className || ``}` },
         ref,
       )
     } finally {
       ID = null
     }
   }
-  Component.className = `.${className}`
+  Component.className = `.${id}`
   Component.toString = () => Component.className
 
   return Component
@@ -59,7 +57,7 @@ export function Style({ children: style }: { children: string }) {
         style,
         (meta = {
           count: 1,
-          id: `stylerun_${createUid()}`,
+          id: createUid(),
         }),
       )
 
@@ -88,7 +86,7 @@ export function useCssVar(value: string | number, name = `var`) {
     if (!ID) {
       throw new Error(`Can't use \`useCssVar\` outside \`stylerun\` HOC`)
     }
-    nameRef.current = `--${name}_${ID}_${++scopeI}`
+    nameRef.current = `--${name}_${++scopeI}_${ID}`
   }
 
   return {
@@ -98,7 +96,3 @@ export function useCssVar(value: string | number, name = `var`) {
     },
   }
 }
-
-/*
-TODO: https://codesandbox.io/s/cssinjs-benchmarks-v2-decorators-5cufn
-*/
