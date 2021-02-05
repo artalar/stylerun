@@ -9,56 +9,32 @@
 
 **Stylerun** is natural and performant way to style your (P?)React application
 
-> API is stable, docs, testt and examples in progress
+> **API is stable. Docs, tests and examples in progress.**
 
-### Usage example
+Stylerun allow you to write styles in an JSX markup, like so:
 
-```js
-import { stylerun, Style, useCssVar } from '../src';
+```JSX
+import { stylerun, Style } from 'stylerun';
 
-import { stylerun, Style, useCssVar } from '../src';
+const Input = stylerun(`input`)
 
-const Text = stylerun(`span`)
-const Consent = stylerun(({ className, options, onChange }) => (
-  <select className={className} onChange={onChange}>
-    {options.map((option) => (
-      <option key={option}>{option}</option>
-    ))}
-  </select>
-))
-
-const Example = stylerun(({ className }) => {
-  const [hue, updateHue] = React.useState(1)
-  const [isAwesome, updateIsAwesome] = React.useState(true)
-  const color = useCssVar(`hsl(${hue}, 100%, ${isAwesome ? 50 : 20}%)`, `color`)
-
-  React.useEffect(() => {
-    requestAnimationFrame(() => {
-      updateHue((hue + 1) % 360)
-    })
-  }, [hue])
-
-  return (
-    <>
-      <div style={color.style} className={className}>
-        <Text>Web is awesome!</Text>
-        <br />
-        <Consent
-          options={[`yes`, `no`]}
-          onChange={(e) => updateIsAwesome(e.target.value === `yes`)}
-        />
-      </div>
-      <Style>{`
-        ${Text} {
-          padding: 0.5em;
-          font-size: 2em;
-          background-color: ${color.var};
-        }
-        ${Consent} {
-          margin-top: 1rem;
-        }
-      `}</Style>
-    </>
-  )
-})
+export function HelloWorld() {
+  const [input, update] = useState(``)
+  return (<>
+    <Input value={input} onChange={e => update(e.target.value)} placeholder="name"/>
+    {input && <p>Hello, ${input}!<p>}
+    <Style>{`
+      ${Input} {
+        font-size: 1.5em;
+      }
+    `}</Style>
+  </>)
+}
 ```
+
+## Motivation
+
+- Allow to use components as selectors
+- Couple markup and styling together
+- Get closer to natural styling
+- Easy dynamic parts and values
