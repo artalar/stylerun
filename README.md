@@ -32,7 +32,13 @@ export function HelloWorld() {
 
 ## Motivation
 
-- Allow to use components as selectors
-- Couple markup and styling together
-- Get closer to natural styling
-- Easy dynamic parts and values
+CSS-in-JS is a powerful approach with benefits like: simple dynamic styles, critical CSS and dead code elimination by design and many others. Stylerun, inspired by [Reshadow](https://reshadow.dev) and [styled-jsx](https://github.com/vercel/styled-jsx), try to get all that benefits, but keeping natural styling and reduce JS specificity.
+
+Key features:
+
+- Natural API
+- No limits for dynamic parts and values (+ helper for css-vars)
+- Use components as selectors
+- Less than 1KB bundle overhead
+- Fast runtime by lack of pre/post processor (no `&` selector and so on)
+- Simple sources
