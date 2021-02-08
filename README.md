@@ -42,3 +42,28 @@ Key features:
 - Less than 1KB bundle overhead
 - Fast runtime by lack of pre/post processor (no `&` selector and so on)
 - Simple sources
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/artalar"><img src="https://avatars0.githubusercontent.com/u/27290320?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Arutyunyan Artyom</b></sub></a><br /><a href="https://github.com/artalar/stylerun/commits?author=artalar" title="Code">💻</a> <a href="#ideas-artalar" title="Ideas, Planning, & Feedback">🤔</a> <a href="#example-artalar" title="Examples">💡</a> <a href="https://github.com/artalar/stylerun/commits?author=artalar" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/kancurochat"><img src="https://avatars.githubusercontent.com/u/54439779?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Daniel Infante Pacheco</b></sub></a><br /><a href="#design-kancurochat" title="Design">🎨</a> <a href="https://github.com/artalar/stylerun/commits?author=kancurochat" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/scorpionknifes"><img src="https://avatars.githubusercontent.com/u/23299540?v=4?s=100" width="100px;" alt=""/><br /><sub><b>ZHENK</b></sub></a><br /><a href="https://github.com/artalar/stylerun/commits?author=scorpionknifes" title="Documentation">📖</a> <a href="#infra-scorpionknifes" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
