@@ -31,9 +31,10 @@
   },
   "prettier": {
     "printWidth": 80,
-    "semi": true,
+    "semi": false,
     "singleQuote": true,
-    "trailingComma": "es5"
+    "trailingComma": "all",
+    "tabWidth": 2
   },
   "name": "stylerun",
   "description": "Stylerun is natural and performant way to style your (P?)React application",
