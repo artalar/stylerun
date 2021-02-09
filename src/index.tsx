@@ -12,31 +12,30 @@ let ID: null | string = null
 export function stylerun<T extends keyof JSX.IntrinsicElements>(
   tag: T,
 ): React.FunctionComponent<JSX.IntrinsicElements[T]> & { className: string }
-export function stylerun<T extends { className?: string; [K: string]: any }>(
+export function stylerun<T extends { className?: string;[K: string]: any }>(
   component: React.FunctionComponent<T>,
 ): React.FunctionComponent<T> & { className: string }
 export function stylerun(
-  Component_: keyof JSX.IntrinsicElements | React.FunctionComponent,
+  Component_: keyof JSX.IntrinsicElements | (React.FunctionComponent),
 ): React.FunctionComponent & { className: string } {
   if (typeof Component_ === `string`) {
     return stylerun((props) => <Component_ {...props} />)
   }
 
-  const id = createUid()
-
   function Component(props: any, ref: any) {
     try {
       scopeI = 0
-      ID = id
+      // `className` may be rewrited in built time for better debug or SSR
+      ID = Component.className.slice(1)
       return (Component_ as React.FunctionComponent)(
-        { ...props, className: `${id} ${props.className || ``}` },
+        Object.assign({}, props, { className: `${ID} ${props.className || ``}` }),
         ref,
       )
     } finally {
       ID = null
     }
   }
-  Component.className = `.${id}`
+  Component.className = `.${createUid()}`
   Component.toString = () => Component.className
 
   return Component
@@ -47,13 +46,13 @@ export const StylerunContext = React.createContext(
 )
 
 export function Style({ children: style }: { children: string }) {
-  const metas = React.useContext(StylerunContext)
+  const cache = React.useContext(StylerunContext)
   React.useLayoutEffect(() => {
-    let meta = metas.get(style)
+    let meta = cache.get(style)
     if (meta !== undefined) {
       meta.count++
     } else {
-      metas.set(
+      cache.set(
         style,
         (meta = {
           count: 1,
@@ -61,21 +60,21 @@ export function Style({ children: style }: { children: string }) {
         }),
       )
 
-      const styleTag = document.createElement(`style`)
-      styleTag.id = meta.id
-      styleTag.type = `text/css`
-      styleTag.innerHTML = style
-      document.head.append(styleTag)
+      document.head.append(Object.assign(
+        document.createElement(`style`),
+        meta,
+        { type: `text/css`, innerHTML: style }
+      ))
     }
 
     return () => {
-      const meta = metas.get(style)!
+      const meta = cache.get(style)!
       if (--meta.count === 0) {
-        metas.delete(style)
+        cache.delete(style)
         document.getElementById(meta.id)!.remove()
       }
     }
-  }, [metas, style])
+  }, [cache, style])
 
   return null
 }
@@ -83,8 +82,8 @@ export function Style({ children: style }: { children: string }) {
 export function useCssVar(value: string | number, name = `var`) {
   const nameRef = React.useRef<string>()
   if (!nameRef.current) {
-    if (!ID) {
-      throw new Error(`Can't use \`useCssVar\` outside \`stylerun\` HOC`)
+    if (ID === null) {
+      throw new Error(`Can't use \`useCssVar\` outside Stylerun HOC`)
     }
     nameRef.current = `--${name}_${++scopeI}_${ID}`
   }
