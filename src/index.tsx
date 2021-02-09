@@ -12,14 +12,14 @@ let ID: null | string = null
 export function stylerun<T extends keyof JSX.IntrinsicElements>(
   tag: T,
 ): React.FunctionComponent<JSX.IntrinsicElements[T]> & { className: string }
-export function stylerun<T extends { className?: string;[K: string]: any }>(
+export function stylerun<T extends { className?: string; [K: string]: any }>(
   component: React.FunctionComponent<T>,
 ): React.FunctionComponent<T> & { className: string }
 export function stylerun(
-  Component_: keyof JSX.IntrinsicElements | (React.FunctionComponent),
+  Component_: keyof JSX.IntrinsicElements | React.FunctionComponent,
 ): React.FunctionComponent & { className: string } {
   if (typeof Component_ === `string`) {
-    return stylerun((props) => <Component_ {...props} />)
+    return stylerun(props => <Component_ {...props} />)
   }
 
   function Component(props: any, ref: any) {
@@ -28,7 +28,9 @@ export function stylerun(
       // `className` may be rewrited in built time for better debug or SSR
       ID = Component.className.slice(1)
       return (Component_ as React.FunctionComponent)(
-        Object.assign({}, props, { className: `${ID} ${props.className || ``}` }),
+        Object.assign({}, props, {
+          className: `${ID} ${props.className || ``}`,
+        }),
         ref,
       )
     } finally {
@@ -60,11 +62,12 @@ export function Style({ children: style }: { children: string }) {
         }),
       )
 
-      document.head.append(Object.assign(
-        document.createElement(`style`),
-        meta,
-        { type: `text/css`, innerHTML: style }
-      ))
+      document.head.append(
+        Object.assign(document.createElement(`style`), meta, {
+          type: `text/css`,
+          innerHTML: style,
+        }),
+      )
     }
 
     return () => {
