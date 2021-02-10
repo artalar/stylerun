@@ -1,9 +1,9 @@
 [![version](https://img.shields.io/npm/v/stylerun)](https://www.npmjs.com/package/stylerun)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/stylerun)](https://bundlephobia.com/result?p=stylerun)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/stylerun)](https://bundlephobia.com/result?p=stylerun@alpha)
 ![license](https://img.shields.io/github/license/artalar/reatom)
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/artalar/stylerun)
 
-[![logo](https://github.com/artalar/stylerun/blob/main/logo.svg)](https://github.com/artalar/stylerun)
+[![logo](https://raw.githubusercontent.com/artalar/stylerun/main/logo.svg)](https://github.com/artalar/stylerun)
 
 **Stylerun** is natural and performant way to style your (P?)React application
 
