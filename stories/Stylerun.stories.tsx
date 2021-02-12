@@ -1,11 +1,27 @@
 import React from 'react';
 import { Meta, Story } from '@storybook/react';
-import { stylerun, Style, useCssVar } from '../src';
+import { styled, Style, useCssVar } from '../src';
 
-const Text = stylerun(`span`)
-// only one rule you need to use zero-cost css-in-js
-// forward `className` to stylerun container
-const Consent = stylerun(({ className, options, onChange }) => (
+const AwesomeText = styled(`div`, ({ isAwesome }: { isAwesome: boolean }) => {
+  const [hue, updateHue] = React.useState(1)
+  React.useEffect(() => {
+    requestAnimationFrame(() => {
+      updateHue((hue + 1) % 360)
+    })
+  }, [hue])
+
+  const colorVar = useCssVar(`hsl(${hue}, 100%, ${isAwesome ? 50 : 20}%)`)
+
+  return `
+    ${AwesomeText} {
+      padding: 0.25em;
+      font-size: 0.5em;
+      background-color: ${colorVar};
+    }
+  `
+})
+
+const Consent = styled(({ className, options, onChange }) => (
   <select className={className} onChange={onChange}>
     {options.map((option) => (
       <option key={option}>{option}</option>
@@ -13,21 +29,13 @@ const Consent = stylerun(({ className, options, onChange }) => (
   </select>
 ))
 
-const Example = stylerun(({ className }) => {
-  const [hue, updateHue] = React.useState(1)
+const Example = styled(({ className }) => {
   const [isAwesome, updateIsAwesome] = React.useState(true)
-  const color = useCssVar(`hsl(${hue}, 100%, ${isAwesome ? 50 : 20}%)`, `color`)
-
-  React.useEffect(() => {
-    requestAnimationFrame(() => {
-      updateHue((hue + 1) % 360)
-    })
-  }, [hue])
 
   return (
     <>
-      <div style={color.style} className={className}>
-        <Text>Web is awesome!</Text>
+      <div className={className}>
+        <AwesomeText isAwesome={isAwesome}>Web is awesome!</AwesomeText>
         <br />
         <Consent
           options={[`yes`, `no`]}
@@ -35,33 +43,36 @@ const Example = stylerun(({ className }) => {
         />
       </div>
       <Style>{`
-        ${Text} {
-          padding: 0.5em;
-          font-size: 2em;
-          background-color: ${color.var};
+        .${className} {
+          box-shadow: 0 0 3rem -0.5rem;
+          width: fit-content;
         }
         ${Consent} {
-          margin-top: 1rem;
+          margin-top: 0.5rem;
         }
       `}</Style>
     </>
   )
 })
 
-function App() {
+const App = styled(({ className }) => {
+  const [input, update] = React.useState(0)
   return (
-    <>
-      <Example />
-      <Example />
+    <div className={className}>
+      <input type="number" onChange={e => update(+e.currentTarget.value)} />
+      {new Array(input).fill(null).map(() => <Example />)}
       <Style>{`
-        ${Example} + ${Example} {
-          margin-top: 2rem;
+        .${className} {
+          display: flex;
+          flex-wrap: wrap;
         }
-      
+        ${Example} + ${Example} {
+          margin: 0.5rem;
+        }
       `}</Style>
-    </>
+    </div>
   )
-}
+})
 
 const meta: Meta = {
   title: 'Main',

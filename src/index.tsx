@@ -2,21 +2,54 @@ import React from 'react'
 
 const cid = Math.random().toString(36).slice(-4)
 let i = 0
-function createUid(name: string | number = ++i) {
-  return `sr_${name}_${cid}`
+function createUid(name?: string | number) {
+  name = name ? `_${name}` : ``
+  return `sr${name}_${++i}_${cid}`
 }
 
-export function stylerun<T extends keyof JSX.IntrinsicElements>(
-  tag: T,
-): React.FunctionComponent<JSX.IntrinsicElements[T]> & { className: string }
-export function stylerun<T extends { className?: string; [K: string]: any }>(
-  component: React.FunctionComponent<T>,
+const noop: (...a: any[]) => any = () => {}
+
+let addCssVar = noop
+
+export function styled<
+  Props extends Record<string, any>,
+  Tag extends keyof JSX.IntrinsicElements = 'div'
+>(
+  tag: Tag,
+  styleCreator?: (props: Props) => string,
+): React.FunctionComponent<JSX.IntrinsicElements[Tag] & Props> & {
+  className: string
+}
+export function styled<T extends { className?: string; [K: string]: any }>(
+  component: React.FunctionComponent<T & { className?: string }>,
 ): React.FunctionComponent<T> & { className: string }
-export function stylerun(
+export function styled(
   component: keyof JSX.IntrinsicElements | React.FunctionComponent,
+  styleCreator?: (props: any) => string,
 ): React.FunctionComponent & { className: string } {
   if (typeof component === `string`) {
-    return stylerun((props) => React.createElement(component, props))
+    return styled(
+      (props: any): React.ReactElement => {
+        let styles: undefined | string
+
+        if (styleCreator !== undefined) {
+          const vars: Record<string, any> = {}
+          addCssVar = Object.assign.bind(null, vars)
+          styles = styleCreator(props)
+          addCssVar = noop
+          // we can mutate props here
+          // because `stylerun` wrapper already make an immutable copy of it
+          props.style = Object.assign({}, props.style || {}, vars)
+        }
+
+        // FIXME:
+        // @ts-expect-error
+        return [
+          React.createElement(component, props),
+          styles && React.createElement(Style, null, styles),
+        ]
+      },
+    )
   }
 
   function Component(props: any, ref: any) {
@@ -33,47 +66,39 @@ export function stylerun(
   return Component
 }
 
-export const StylerunContext = React.createContext(
-  new Map<string, { count: number; id: string; innerHTML: string }>(),
-)
+export const StylerunContext = React.createContext(new Set<string>())
 
 export function Style({ children: style }: { children: string }) {
   const cache = React.useContext(StylerunContext)
   React.useLayoutEffect(() => {
-    let meta = cache.get(style)
-    if (meta !== undefined) {
-      meta.count++
-    } else {
-      cache.set(
-        style,
-        (meta = {
-          count: 1,
-          id: createUid(),
-          innerHTML: style,
-        }),
-      )
-
-      document.head.append(Object.assign(document.createElement(`style`), meta))
+    if (!cache.has(style)) {
+      const styleEl = document.createElement(`style`)
+      styleEl.innerHTML = style
+      document.head.appendChild(styleEl)
     }
-
-    return () => {
-      if (--meta!.count === 0) {
-        cache.delete(style)
-        document.getElementById(meta!.id)!.remove()
-      }
-    }
+    cache.add(style)
   }, [cache, style])
 
   return null
 }
 
-export function useCssVar(value: string | number, description = `var`) {
+export function useCssVar<T extends string | number>(
+  value: T,
+  description = `var`,
+): React.CSSProperties {
   const name = React.useState(() => `--${createUid(description)}`)[0]
-
-  return {
-    var: `var(${name})`,
-    style: {
+  const meta = Object.defineProperty(
+    {
       [name]: value,
     },
-  }
+    // `defineProperty` need to make it `enumerable: false`
+    'toString',
+    {
+      value: () => `var(${name})`,
+    },
+  )
+
+  addCssVar(meta)
+
+  return meta
 }
