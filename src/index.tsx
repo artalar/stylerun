@@ -1,28 +1,37 @@
 import React from 'react'
 
-const cid = Math.random().toString(36).slice(-4)
+const cid = Math.random()
+  .toString(36)
+  .slice(-4)
+
 let i = 0
-function createUid(name?: string | number) {
-  name = name ? `_${name}` : ``
-  return `sr${name}_${++i}_${cid}`
+
+export type UseCssVar = (
+  value: string | number,
+  description?: string,
+) => React.CSSProperties
+
+type StylerunProps<Props extends Record<string, any> = {}> = Props & {
+  className: string
+  useCssVar: UseCssVar
 }
 
-const noop: (...a: any[]) => any = () => {}
-
-let addCssVar = noop
-
 export function styled<
-  Props extends Record<string, any>,
+  Props extends Record<string, any> = {},
   Tag extends keyof JSX.IntrinsicElements = 'div'
 >(
   tag: Tag,
-  styleCreator?: (props: Props) => string,
+  styleCreator?: (
+    props: StylerunProps<JSX.IntrinsicElements[Tag] & Props>,
+  ) => string,
 ): React.FunctionComponent<JSX.IntrinsicElements[Tag] & Props> & {
   className: string
 }
-export function styled<T extends { className?: string; [K: string]: any }>(
-  component: React.FunctionComponent<T & { className?: string }>,
-): React.FunctionComponent<T> & { className: string }
+export function styled<Props>(
+  component: React.FunctionComponent<StylerunProps<Props>>,
+): React.FunctionComponent<Props & { className?: string }> & {
+  className: string
+}
 export function styled(
   component: keyof JSX.IntrinsicElements | React.FunctionComponent,
   styleCreator?: (props: any) => string,
@@ -30,17 +39,21 @@ export function styled(
   if (typeof component === `string`) {
     return styled(
       (props: any): React.ReactElement => {
-        let styles: undefined | string
+        let styles = ``
 
         if (styleCreator !== undefined) {
           const vars: Record<string, any> = {}
-          addCssVar = Object.assign.bind(null, vars)
+          const _useCssVar = props.useCssVar
+          props.useCssVar = (v: any, d: any) => {
+            const inlineStyles = _useCssVar(v, d)
+            Object.assign(vars, inlineStyles)
+            return inlineStyles
+          }
           styles = styleCreator(props)
-          addCssVar = noop
-          // we can mutate props here
-          // because `stylerun` wrapper already make an immutable copy of it
           props.style = Object.assign({}, props.style || {}, vars)
         }
+
+        props.useCssVar = void 0
 
         // FIXME:
         // @ts-expect-error
@@ -53,15 +66,45 @@ export function styled(
   }
 
   function Component(props: any, ref: any) {
-    return (component as React.FunctionComponent)(
+    const { className } = Component
+
+    let i = 0
+    function useCssVar<T extends string | number>(
+      value: T,
+      description = `var`,
+    ): React.CSSProperties {
+      if (i < 0) {
+        throw new Error(`Can't use \`useCssVar\` outside binded render`)
+      }
+
+      const name = React.useState(
+        () => `--${description}_${++i}_${className}`,
+      )[0]
+
+      return Object.defineProperty(
+        {
+          [name]: value,
+        },
+        // `defineProperty` is needed to make it `enumerable: false`
+        'toString',
+        {
+          value: () => `var(${name})`,
+        },
+      )
+    }
+
+    const element = (component as React.FunctionComponent)(
       Object.assign({}, props, {
-        className: `${Component} ${props.className || ``}`.slice(1),
+        className: `${className} ${props.className || ``}`,
+        useCssVar,
       }),
       ref,
     )
+    i = -1
+    return element
   }
-  Component.className = `.${createUid()}`
-  Component.toString = () => Component.className
+  Component.className = `sr_${++i}_${cid}`
+  Component.toString = () => `.${Component.className}`
 
   return Component
 }
@@ -80,25 +123,4 @@ export function Style({ children: style }: { children: string }) {
   }, [cache, style])
 
   return null
-}
-
-export function useCssVar<T extends string | number>(
-  value: T,
-  description = `var`,
-): React.CSSProperties {
-  const name = React.useState(() => `--${createUid(description)}`)[0]
-  const meta = Object.defineProperty(
-    {
-      [name]: value,
-    },
-    // `defineProperty` need to make it `enumerable: false`
-    'toString',
-    {
-      value: () => `var(${name})`,
-    },
-  )
-
-  addCssVar(meta)
-
-  return meta
 }
