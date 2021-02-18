@@ -71,10 +71,11 @@ The Style component just cache and forward your styles into the [head](https://d
 `useCssVar` accept string or number value and create object with one **unique** css-property name in the keys and and passed value in the value of property. It may be used as an [style object](https://reactjs.org/docs/dom-elements.html#style) or spread in to it. Also it has [`toString`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/toString) method that returns css-variable for paste it in a styles.
 
 ```JSX
-import { Style, useCssVar } from 'stylerun'
+import { Style } from 'stylerun'
 
-export function Example1(props/*: { color: 'red' }*/) {
-    const colorVar = useCssVar(props.color)
+export const Example1 = styled/*<{ color: string }>*/(
+  ({ color, useCssVar }) => {
+    const colorVar = useCssVar(color)
 
     console.log(colorVar)            // { '--sr_var_1_qj2c': 'red' }
     console.log(colorVar.toString()) // 'var(--sr_var_1_qj2c)'
@@ -89,11 +90,13 @@ export function Example1(props/*: { color: 'red' }*/) {
             }
         `}</Style>
     </>
-}
+  }
+)
 
 // Also you may paste optional name for generated value by the second argument
 
-export function Example2(props/*: { color: 'red', size: '2' }*/) {
+export const Example2 = styled/*<{ color: string, size: '2' }>*/(
+  ({ color, size, useCssVar }) => {
     const colorVar = useCssVar(props.color)
     const sizeVar = useCssVar(`${props.size}em`, 'size')
 
@@ -109,7 +112,8 @@ export function Example2(props/*: { color: 'red', size: '2' }*/) {
             }
         `}</Style>
     </>
-}
+  }
+)
 ```
 
 ### styled
@@ -141,10 +145,10 @@ When you create an component with `styled` method you can paste styles creator a
 Remember that styles creator return plain css with global values (selectord), so for scoped defenition for created component you should use it as selector in them self.
 
 ```JSX
-import { styled, useCssVar } from 'stylerun'
+import { styled } from 'stylerun'
 
-const Input = styled(`input`, ({ value = '' }) => `
-  ${Input} {
+const Input = styled(`input`, ({ className, value = '', useCssVar }) => `
+  .${className} {
     font-size: ${useCssVar(`${Math.max(1, 2 - String(value).length * 0.1)}em`)}
   }
 `)
@@ -184,11 +188,11 @@ export function Example() {
 ```JSX
 import { styled } from 'stylerun';
 
-const TextInput = styled('input', () => `
-  ${TextInput} {
+const TextInput = styled('input', ({ className }) => `
+  .${className} {
     outline: none;
   }
-  ${TextInput}:focus {
+  .${className}:focus {
     box-shadow: 0 0 5px rgba(81, 203, 238, 1);
   }
 `)
@@ -207,14 +211,17 @@ In this example value from props will be updated on each frame, but documents st
 ```JSX
 import { styled, useCssVar } from 'stylerun';
 
-const TextInput = styled('input', ({ shadowOpasity = 1 }) => `
-  ${TextInput} {
-    outline: none;
-  }
-  ${TextInput}:focus {
-    box-shadow: 0 0 5px rgba(81, 203, 238, ${useCssVar(shadowOpasity)});
-  }
-`)
+const TextInput = styled(
+  'input',
+  ({ shadowOpasity = 1, className, useCssVar }) => `
+    .${className} {
+      outline: none;
+    }
+    .${className}:focus {
+      box-shadow: 0 0 5px rgba(81, 203, 238, ${useCssVar(shadowOpasity)});
+    }
+  `
+)
 
 export function Example() {
   const [shadowOpasity, update] = React.useState(0)
