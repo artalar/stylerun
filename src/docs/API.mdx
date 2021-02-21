@@ -1,0 +1,150 @@
+import { Playground } from 'docz'
+import { AutoResizedInput } from './AutoResizedInput'
+import { Style, styled } from '../'
+
+
+```tsx
+import { Style, styled } from 'stylerun'
+```
+
+## `Style`
+
+The Style component just cache and forward pasted styles into the [head](https://developer.mozilla.org/en-US/docs/Glossary/Head).
+
+Basic example with hand made `className`:
+
+<Playground>{() => (
+    <>
+        <textarea className="text-input" />
+        <Style>{`
+            .text-input {
+                font-size: 1em;
+                outline: none;
+            }
+            .text-input:focus {
+                box-shadow: 0 0 1em indigo;
+            }
+        `}</Style>
+    </>
+)}</Playground>
+
+## `styled`
+
+Inspired by [styled-component](https://styled-components.com) Stylerun has `styled` method for easily creation of styled components and wrap existed components to allow use it as selectors.
+
+```tsx
+import { styled } from 'stylerun'
+
+// classic input component with `className` prop and returns it `toString` method
+const Input = styled('input')
+console.log(Input.className)  // 'sr_1_qj2c'
+console.log(Input.toString()) // '.sr_1_qj2c'
+console.log(Input + '')       // '.sr_1_qj2c'
+console.log(`${Input}`)       // '.sr_1_qj2c'
+
+// Fill free rewrite `className` for better debug
+Input.className = `example-input`
+console.log(Input.className)  // 'example-input'
+console.log(Input.toString()) // '.example-input'
+console.log(Input + '')       // '.example-input'
+console.log(`${Input}`)       // '.example-input'
+
+const OtherInput = styled(Input)
+console.log(OtherInput.className)  // 'sr_2_qj2c'
+```
+
+When you create an component with `styled` method you can paste styles creator as the second argument. It will be called inside component render on each update so you may use [hooks](https://reactjs.org/docs/hooks-intro.html) with it. One of the best feature of Stylerun is build in `useCssVar` hook that passed in the props, using it inside the styles creator callback automatically register created css-variables inside element styles.
+
+Remember that styles creator return plain css with global values for [Style](#style) component, so for scoped styles defenition you should use passed `className`.
+
+```tsx
+import { styled } from 'stylerun'
+
+const TextArea = styled(
+  `textarea`,
+  ({ className }) => `
+    .${className} {
+      font-size: 1em;
+      outline: none;
+    }
+    .${className}:focus {
+      box-shadow: 0 0 1em indigo;
+    }
+  `
+)
+```
+
+---
+
+```tsx
+import { styled } from 'stylerun'
+
+const AutoResizedInput = styled(`input`, ({ className, value = '', useCssVar }) => `
+  .${className} {
+    font-size: ${useCssVar(`${Math.max(1, 2 - String(value).length * 0.1)}em`)}
+  }
+`)
+```
+
+<Playground>{() => {
+  const [input, update] = React.useState('')
+  
+  return (
+    <AutoResizedInput
+      value={input}
+      onChange={e => update(e.currentTarget.value)}
+    />
+  )
+}}</Playground>
+
+## `useCssVar`
+
+[Css-variables](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties) is a most performant and flexible way to bring visual interaction to your application. Stylerun help to use it.
+
+`useCssVar` come from `styled` props and accept string or number value and create object with one **unique** css-property name in the keys and and passed value in the value of property. It may be used as an [style object](https://reactjs.org/docs/dom-elements.html#style) or spread in to it. Also it has [`toString`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/toString) method that returns css-variable for paste it in a styles.
+
+```tsx
+import { Style } from 'stylerun'
+
+export const Example1 = styled/*<{ color: string }>*/(
+  ({ color, useCssVar }) => {
+    const colorVar = useCssVar(color)
+
+    console.log(colorVar)            // { '--sr_var_1_qj2c': 'red' }
+    console.log(colorVar.toString()) // 'var(--sr_var_1_qj2c)'
+    console.log(colorVar + '')       // 'var(--sr_var_1_qj2c)'
+    console.log(`${colorVar}`)       // 'var(--sr_var_1_qj2c)'
+
+    return <>
+        <span style={colorVar} className="example-text">text</span>
+        <Style>{`
+            .example-text {
+                color: ${colorVar}
+            }
+        `}</Style>
+    </>
+  }
+)
+
+// Also you may paste optional name for generated value by the second argument
+
+export const Example2 = styled/*<{ color: string, size: '2' }>*/(
+  ({ color, size, useCssVar }) => {
+    const colorVar = useCssVar(props.color)
+    const sizeVar = useCssVar(`${props.size}em`, 'size')
+
+    console.log(colorVar) // { '--sr_var_2_qj2c': 'red' }
+    console.log(sizeVar)  // { '--sr_size_3_qj2c': '2em' }
+
+    return <>
+        <span style={{...colorVar, ...sizeVar}} className="example-text">text</span>
+        <Style>{`
+            .example-text {
+                color: ${colorVar}
+                font-size: ${sizeVar}
+            }
+        `}</Style>
+    </>
+  }
+)
+```
