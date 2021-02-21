@@ -95,7 +95,7 @@ export function styled(
 
     const element = (component as React.FunctionComponent)(
       Object.assign({}, props, {
-        className: `${className} ${props.className || ``}`,
+        className: className + (props.className ? ` ${props.className}` : ``),
         useCssVar,
       }),
       ref,
