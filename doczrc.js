@@ -11,4 +11,5 @@ export default {
   dest: 'docs',
   title: 'Stylerun docs',
   typescript: true,
+  base: '/stylerun/'
 }
