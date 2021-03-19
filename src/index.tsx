@@ -115,12 +115,17 @@ export function Style({ children: style }: { children: string }) {
   const cache = React.useContext(StylerunContext)
   React.useLayoutEffect(() => {
     if (!cache.has(style)) {
+      cache.add(style)
       const styleEl = document.createElement(`style`)
       styleEl.innerHTML = style
       document.head.appendChild(styleEl)
     }
-    cache.add(style)
   }, [cache, style])
+
+  // SSR
+  if (typeof window === `undefined`) {
+    cache.add(style)
+  }
 
   return null
 }

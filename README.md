@@ -1,5 +1,5 @@
 [![version](https://img.shields.io/npm/v/stylerun)](https://www.npmjs.com/package/stylerun)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/stylerun)](https://bundlephobia.com/result?p=stylerun@alpha)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/stylerun)](https://bundlephobia.com/result?p=stylerun)
 ![license](https://img.shields.io/github/license/artalar/reatom)
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/artalar/stylerun)
 
@@ -34,23 +34,23 @@ It looks and feels like a plain CSS, but works much powerful because we use [Jav
 
 CSS-in-JS is a powerful approach with benefits like: simple dynamic styles, critical CSS and dead code elimination by design and many others. Stylerun, inspired by [Reshadow](https://reshadow.dev) and [styled-jsx](https://github.com/vercel/styled-jsx), try to get all that benefits, but keeping natural styling and reduce JS specificity.
 
-Key features:
+### Key features
 
 - Natural API
 - No limits for dynamic parts and values (+ helper for css-vars)
 - Use components as selectors
-- Only [0.5KB](https://bundlephobia.com/result?p=stylerun@alpha) bundle overhead
+- Only [0.5KB](https://bundlephobia.com/result?p=stylerun) bundle overhead
 - A few times faster runtime than [styled-components](https://styled-components.com) or [goober](https://github.com/cristianbote/goober) by lack of pre/post processor
   > TODO: benchmarks
 - No need a build time setup
+- Simple SSR / SSG integration
 
-Limitations:
+### Limitations
 
 - Stylerun coupled with (P?)React and has no native API
 - Stylerun has no compiler (pre/post processor) thats prevent vendor prefixing and nesting (`&`) usage
   > TODO: https://github.com/artalar/stylerun/issues/19
-- Stylerun has no built time static extraction and hasn't goal for that (but assumes integration with SSR / SSG)
-  > TODO: https://github.com/artalar/stylerun/issues/7
+- Stylerun has no built time static extraction and hasn't goal for that.
 - No [class components](https://reactjs.org/docs/components-and-props.html#function-and-class-components) support
   > use `styled(props => <ClassComponent {...props}>)` instead
 
@@ -156,7 +156,7 @@ const Input = styled(`input`, ({ className, value = '', useCssVar }) => `
 
 ## Examples
 
-#### Component as selector
+### Component as selector
 
 > Component should accept and apply `className` property.
 
@@ -181,7 +181,7 @@ export function Example() {
 }
 ```
 
-#### New component
+### New component
 
 > Component should accept and apply `className` property.
 
@@ -204,7 +204,7 @@ export function Example() {
 }
 ```
 
-#### useCssVar autobind
+### useCssVar autobind
 
 In this example value from props will be updated on each frame, but documents styles not changes, only autobinded css-variable.
 
@@ -238,9 +238,47 @@ export function Example() {
 }
 ```
 
-Advanced example:
+### Advanced example
 
 [![Advanced example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/stylerun-vzw20)
+
+### SSR / SSG
+
+**Next.js**:
+
+```js
+import Document from 'next/document'
+import type { DocumentContext } from 'next/document'
+import { StylerunContext } from 'stylerun'
+
+export default class MyDocument extends Document {
+  static async getInitialProps(ctx: DocumentContext) {
+    const stylesSet = new Set<string>()
+    const originalRenderPage = ctx.renderPage
+
+    ctx.renderPage = () =>
+      originalRenderPage({
+        enhanceApp: (App) => (props) => (
+          <StylerunContext.Provider value={stylesSet}>
+            <App {...props} />
+          </StylerunContext.Provider>
+        ),
+      })
+
+    const initialProps = await Document.getInitialProps(ctx)
+
+    return {
+      ...initialProps,
+      styles: (
+        <>
+          {initialProps.styles}
+          <style>/* SSR */{[...stylesSet].join('\n')}</style>
+        </>
+      ),
+    }
+  }
+}
+```
 
 ## Contributors ✨
 
