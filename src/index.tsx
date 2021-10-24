@@ -114,8 +114,9 @@ export const StylerunContext = React.createContext(new Set<string>())
 export function Style({ children: style }: { children: string }) {
   const cache = React.useContext(StylerunContext)
   React.useLayoutEffect(() => {
-    if (!cache.has(style)) {
-      cache.add(style)
+    const cacheLastSize = cache.size
+    cache.add(style)
+    if (cacheLastSize !== cache.size) {
       const styleEl = document.createElement(`style`)
       styleEl.innerHTML = style
       document.head.appendChild(styleEl)
