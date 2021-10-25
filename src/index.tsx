@@ -111,15 +111,22 @@ export function styled(
 
 export const StylerunContext = React.createContext(new Set<string>())
 
+let styleEl: null | HTMLStyleElement = null
+
 export function Style({ children: style }: { children: string }) {
   const cache = React.useContext(StylerunContext)
   React.useLayoutEffect(() => {
     const cacheLastSize = cache.size
     cache.add(style)
     if (cacheLastSize !== cache.size) {
-      const styleEl = document.createElement(`style`)
-      styleEl.innerHTML = style
-      document.head.appendChild(styleEl)
+      if (styleEl == null) {
+        styleEl = document.createElement(`style`)
+        Promise.resolve().then(() => {
+          document.head.appendChild(styleEl!)
+          styleEl = null
+        })
+      }
+      styleEl.innerHTML += style
     }
   }, [cache, style])
 
