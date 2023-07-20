@@ -1,33 +1,46 @@
 {
   "version": "0.0.1-rc1",
+  "name": "stylerun",
+  "description": "Stylerun is natural and performant way to style your (P?)React application",
+  "author": "artalar",
   "license": "MIT",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
+  "sideEffects": false,
+  "source": "src/index.ts",
+  "exports": {
+    "types": "./build/index.d.ts",
+    "require": "./build/index.js",
+    "default": "./build/index.module.js"
+  },
+  "main": "build/index.js",
+  "module": "build/index.module.js",
+  "types": "build/index.d.ts",
   "files": [
     "dist",
     "src"
   ],
-  "engines": {
-    "node": ">=10"
-  },
+  "keywords": [
+    "style",
+    "stylerun",
+    "styled-components"
+  ],
   "scripts": {
-    "start": "tsdx watch",
-    "build": "tsdx build",
-    "test": "tsdx test --passWithNoTests",
-    "lint": "tsdx lint",
-    "prepare": "tsdx build && npm run size",
-    "size": "size-limit",
-    "analyze": "size-limit --why",
-    "docz:dev": "docz dev",
-    "docz:build": "docz build"
+    "prepublishOnly": "npm run build && npm run size",
+    "build": "microbundle",
+    "test": "node src/index.test.ts",
+    "size": "size-limit"
   },
-  "peerDependencies": {
-    "react": ">=17"
+  "browserslist": [
+    "last 1 year"
+  ],
+  "minify": {
+    "mangle": false
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "tsdx lint"
-    }
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/artalar/stylerun.git"
   },
   "prettier": {
     "printWidth": 80,
@@ -36,34 +49,17 @@
     "trailingComma": "all",
     "tabWidth": 2
   },
-  "name": "stylerun",
-  "description": "Stylerun is natural and performant way to style your (P?)React application",
-  "author": "artalar",
-  "module": "dist/stylerun.esm.js",
   "size-limit": [
     {
-      "path": "dist/stylerun.cjs.production.min.js",
-      "limit": "1 KB"
-    },
-    {
-      "path": "dist/stylerun.esm.js",
+      "path": "build/index.js",
       "limit": "1 KB"
     }
   ],
   "devDependencies": {
-    "@babel/core": "^7.12.17",
-    "@size-limit/preset-small-lib": "^4.9.2",
-    "@types/react": "^17.0.2",
-    "@types/react-dom": "^17.0.1",
-    "babel-loader": "^8.2.2",
-    "docz": "^2.3.1",
-    "husky": "^4.0.0",
-    "react": "^17.0.1",
-    "react-dom": "^17.0.1",
-    "react-is": "^17.0.1",
-    "size-limit": "^4.9.2",
-    "tsdx": "^0.14.1",
-    "tslib": "^2.1.0",
-    "typescript": "^4.1.5"
+    "@size-limit/preset-small-lib": "^8.2.6",
+    "microbundle": "^0.15.1",
+    "prettier": "^3.0.0",
+    "size-limit": "^8.2.6",
+    "typescript": "^3.9.10"
   }
 }
