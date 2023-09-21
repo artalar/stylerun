@@ -1,22 +1,23 @@
 {
-  "version": "0.0.1-rc1",
+  "version": "1.0.0",
   "name": "stylerun",
   "description": "Stylerun is natural and performant way to style your (P?)React application",
   "author": "artalar",
   "license": "MIT",
-  "sideEffects": false,
+  "type": "module",
+  "sideEffects": true,
   "source": "src/index.ts",
   "exports": {
-    "types": "./build/index.d.ts",
-    "require": "./build/index.js",
-    "default": "./build/index.module.js"
+    "require": "./dist/index.cjs",
+    "default": "./dist/index.modern.js"
   },
-  "main": "build/index.js",
-  "module": "build/index.module.js",
-  "types": "build/index.d.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.module.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist",
-    "src"
+    "src",
+    "README.md"
   ],
   "keywords": [
     "style",
@@ -24,13 +25,13 @@
     "styled-components"
   ],
   "scripts": {
-    "prepublishOnly": "npm run build && npm run size",
-    "build": "microbundle",
-    "test": "node src/index.test.ts",
+    "prepublishOnly": "tsc && npm run build && npm run test && npm run size",
+    "build": "microbundle -f esm,cjs",
+    "test": "tsx src/index.test.ts",
     "size": "size-limit"
   },
   "browserslist": [
-    "last 1 year"
+    "last 2 Chrome versions"
   ],
   "minify": {
     "mangle": false
@@ -51,15 +52,18 @@
   },
   "size-limit": [
     {
-      "path": "build/index.js",
-      "limit": "1 KB"
+      "path": "dist/index.module.js",
+      "limit": "500 B"
     }
   ],
   "devDependencies": {
-    "@size-limit/preset-small-lib": "^8.2.6",
+    "@size-limit/preset-small-lib": "^9.0.0",
+    "linkedom-global": "^1.0.0",
     "microbundle": "^0.15.1",
-    "prettier": "^3.0.0",
-    "size-limit": "^8.2.6",
-    "typescript": "^3.9.10"
+    "prettier": "^3.0.3",
+    "size-limit": "^9.0.0",
+    "tsx": "^3.12.10",
+    "typescript": "^5.2.2",
+    "uvu": "^0.5.6"
   }
 }
