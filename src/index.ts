@@ -1,97 +1,89 @@
-const cid = Math.random().toString(36).slice(-4)
+let cid = Math.random().toString(36).slice(-4)
 let cidCount = 0
 
-let appending: undefined | Promise<void>
-let styleEl: undefined | HTMLStyleElement
+let style = ''
+let styleEl = document.createElement('style')
+styleEl.id = 'stylerun'
+document.head.appendChild(styleEl!)
 
-export const styled = (
-  className: string,
-  {
-    selector,
-    style = '',
-    vars = [],
-  }: {
-    selector?: string
-    style?: string
-    vars?: Array<{ name: string; fn: (props: T) => string | number }>
-  } = {},
+type KindaStyle = Record<string, string | number>
+
+type Stylerun<T = {}> = {
+  (
+    props: T,
+    style?: KindaStyle,
+    extraClasses?: string,
+  ): { className: string; style: KindaStyle }
+
+  styled: (
+    selector: string | Stylerun,
+    options?: {
+      selector?: string
+      vars?: Array<{ name: string; fn: (props: {}) => string | number }>
+    },
+  ) => <TT>(
+    styleParts: TemplateStringsArray,
+    ...varsValues: Array<string | number | ((props: TT) => string | number)>
+  ) => Stylerun<T & TT>
+
+  toString(): string
+}
+
+// @ts-expect-error
+let stylerun: Stylerun['styled'] = (
+  className,
+  { selector, vars = [] } = {},
 ) => {
   className ||= `sr_${++cidCount}_${cid}`
   selector ??= `.${className}`
 
-  return <T>(
-    styleParts: TemplateStringsArray,
-    ...varsValues: Array<string | number | ((props: T) => string | number)>
-  ) => {
-    style += `${selector}{`
+  return (styleParts, ...varsValues) => {
+    if (!style) {
+      Promise.resolve().then(() => {
+        styleEl.innerHTML += style
+        style = ''
+      })
+    }
 
+    style += `${selector}{`
     styleParts.forEach((stylePart, i) => {
       style += stylePart
       if (i < varsValues.length) {
-        const value = varsValues[i]
+        let value = varsValues[i]
         if (typeof value === `function`) {
-          const name = `--${++cidCount}_${className}`
-          style += `var(${name})`
+          let name = `--${++cidCount}_${className}`
+          // @ts-expect-error generic leak
           vars.push({ name, fn: value })
-        } else {
-          style += value
+          value = `var(${name})`
         }
+
+        style += value
       }
     })
-
     style += `}`
 
-    appending ??= Promise.resolve().then(() => {
-      if (!styleEl) {
-        styleEl = document.createElement(`style`)
-        styleEl.innerHTML += style
-        document.head.appendChild(styleEl!)
-      } else {
-        styleEl.innerHTML += style
-      }
-    })
-
-    return {
-      styled: (selector: string) =>
-        styled(className, {
-          selector: `.${className}${selector}`,
-          style,
-          vars,
-        }),
-      style,
-      class: className,
-      className,
-      vars(props: T) {
-        let varsRec: Record<string, string | number> = {}
-        for (const { name, fn } of vars) {
-          varsRec[name] = fn(props)
+    return Object.assign(
+      (props: any, style: KindaStyle = {}, extraClasses?: string) => {
+        for (let { name, fn } of vars) {
+          style[name] = fn(props)
         }
-        return varsRec
+        return {
+          className: extraClasses ? `${className} ${extraClasses}` : className,
+          style,
+        }
       },
-      toString: () => `.${className}`,
-      *[Symbol.iterator]() {
-        yield (
-          props: T,
-        ): {
-          className: string
-          style: Record<string, string | number>
-        } => ({
-          className,
-          style: this.vars(props),
-        })
+      {
+        styled: (selector: string | Stylerun) =>
+          stylerun(className, {
+            selector: `.${className}${
+              typeof selector === 'function' ? ` ${selector}` : selector
+            }`,
+            vars: vars.slice(0),
+          }),
+        toString: () => `.${className}`,
       },
-    }
+    )
   }
 }
 
-// const listStyles = styled('')`
-//   color: red;
-// `
-// const ulStyles = styled('')`
-//   margin: 1rem;
-// `.styled(` ${listStyles}`)`
-//   padding-left: 1rem;
-//   color: ${(props: { color: string }) => props.color};
-// `
-
-// console.log(ulStyles.vars('blue'))
+export default stylerun
